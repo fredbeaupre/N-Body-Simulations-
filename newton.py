@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def get_accuracy(pos, mass, G, softening):
+def get_acceleration(pos, mass, G, softening):
     # r = [x, y, z]
     x = pos[:, 0:1]  # all x coordinates
     y = pos[:, 1:2]  # all y coordinates
@@ -60,7 +60,7 @@ def main():
     # convert to CoM frame
     vel -= np.mean(mass * vel, 0) / np.mean(mass)
 
-    acc = get_accuracy(pos, mass, G, softening)  # init acceleration
+    acc = get_acceleration(pos, mass, G, softening)  # init acceleration
 
     KE, PE = get_energy(pos, vel, mass, G)  # init energy
 
@@ -76,12 +76,7 @@ def main():
     t_all = np.arange(Nt + 1) * dt
 
     # prepare plotting
-    plt.style.use('dark_background')
-    fig = plt.figure(figsize=(4, 5), dpi=80)
-    grid = plt.GridSpec(3, 1, wspace=0.0, hspace=0.3)
-    ax1 = plt.subplot(grid[0:2, 0])
-    ax2 = plt.subplot(grid[2, 0])
-
+    fig, ax = plt.subplots(figsize=(8, 8), dpi=80)
     # main loop
     for i in range(Nt):
         # 1/2 kick
@@ -91,7 +86,7 @@ def main():
         pos += vel * dt
 
         # update accelerations
-        acc = get_accuracy(pos, mass, G, softening)
+        acc = get_acceleration(pos, mass, G, softening)
 
         # 1/2 kick
         vel += acc * dt/2.0
@@ -109,33 +104,32 @@ def main():
 
         # plotting
         if plot_real_time or (i == Nt-1):
-            plt.sca(ax1)
             plt.cla()
             xx = pos_save[:, 0, max(i-50, 0):i+1]
             yy = pos_save[:, 1, max(i-50, 0):i+1]
             plt.scatter(xx, yy, s=1, color='cornflowerblue', alpha=0.5)
-            plt.scatter(pos[:, 0], pos[:, 1], s=10, color='blue')
-            ax1.set(xlim=(-4, 4), ylim=(-4, 4))
-            ax1.set_aspect('equal', 'box')
-            ax1.set_xticks([-4, -2, -3, -1, 0, 1, 2, 3, 4])
-            ax1.set_yticks([-4, -3, -2, -1, 0, 1, 2, 3, 4])
+            plt.scatter(pos[:, 0], pos[:, 1], s=20, color='blue')
+            ax.set(xlim=(-2, 2), ylim=(-2, 2))
+            ax.set_aspect('equal', 'box')
+            ax.set_xticks([-2, -1, 0, 1, 2])
+            ax.set_yticks([-2, -1, 0, 1, 2])
 
-            plt.sca(ax2)
-            plt.cla()
-            plt.scatter(t_all, KE_save, color='red', s=1,
-                        label='KE' if i == Nt-1 else "")
-            plt.scatter(t_all, PE_save, color='blue', s=1,
-                        label="PE" if i == Nt-1 else "")
-            plt.scatter(t_all, KE_save + PE_save, color='white',
-                        s=1, label='Etot' if i == Nt-1 else "")
-            ax2.set(xlim=(0, t_end), ylim=(-300, 300))
-            ax2.set_aspect(0.007)
+            # plt.sca(ax2)
+            # plt.cla()
+            # plt.scatter(t_all, KE_save, color='red', s=1,
+            #             label='KE' if i == Nt-1 else "")
+            # plt.scatter(t_all, PE_save, color='blue', s=1,
+            #             label="PE" if i == Nt-1 else "")
+            # plt.scatter(t_all, KE_save + PE_save, color='white',
+            #             s=1, label='Etot' if i == Nt-1 else "")
+            # ax2.set(xlim=(0, t_end), ylim=(-300, 300))
+            # ax2.set_aspect(0.007)
             plt.pause(0.001)
 
-    plt.sca(ax2)
-    plt.xlabel('time')
-    plt.ylabel('energy')
-    ax2.legend(loc='upper right')
+    # plt.sca(ax2)
+    # plt.xlabel('time')
+    # plt.ylabel('energy')
+    # ax2.legend(loc='upper right')
     plt.savefig('nbody.png', dpi=240)
     plt.show()
     return 0
